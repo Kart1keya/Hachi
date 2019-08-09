@@ -9,8 +9,20 @@ Following modules of Hachi make this tool a great addition to an analyst’s or 
 • RESTful API: Hachi provides RESTful API which enables this tool to seamlessly integration with malware processing frameworks.
 • Visualization: It allows for the creation of detailed visual reports.
 
+#### Hachi User Interface
+![Hachi User Interface](https://github.com/Kart1keya/Hachi/blob/master/images/User_Interface.png)
 
-References: <br/>
+#### Hachi Report Page
+![Hachi Report Page](https://github.com/Kart1keya/Hachi/blob/master/images/Report_Snap.png)
+
+#### Dependecies:
+1. Download radare2 and add its path in system path.
+2. Download and install Graphviz2.38 and add its path in system path.
+3. Enable MSMQ feature on the system and create a pipe and add its name in Hachi.config file.
+4. Install python packages mentioned in requirements.txt.
+5. Run hachi.py and scanda.py
+
+#### References: <br/>
 https://attack.mitre.org/<br/>
 https://www.radare.org/get/THC2018.pdf<br/>
 https://github.com/pinkflawd/r2graphity<br/>
