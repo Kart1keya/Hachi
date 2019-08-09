@@ -1,3 +1,5 @@
+[![defcon](https://img.shields.io/badge/DEFCON27-DEMOLABS-green.svg)](https://www.defcon.org/html/defcon-27/dc-27-demolabs.html#Hachi)
+
 ![Hachi Logo](https://github.com/Kart1keya/Hachi/blob/master/images/Hachi-Logo-Final-3.png)
 
 ATT&CK framework has become a benchmark in the security domain. ATT&CK provides data about each technique used across different attack stages. Hachi was created to contribute to the ATT&CK community. Hachi is based on the radare2 framework and uses data provided by ATT&CK to map the symptoms of malware on ATT&CK matrix.
