@@ -10,10 +10,10 @@ Following modules of Hachi make this tool a great addition to an analyst’s or 
 • Visualization: It allows for the creation of detailed visual reports.
 
 #### Hachi User Interface
-![Hachi User Interface](https://github.com/Kart1keya/Hachi/blob/master/images/User_Interface.png)
+![Hachi User Interface](https://github.com/Kart1keya/Hachi/blob/master/images/User_Interface.PNG)
 
 #### Hachi Report Page
-![Hachi Report Page](https://github.com/Kart1keya/Hachi/blob/master/images/Report_Snap.png)
+![Hachi Report Page](https://github.com/Kart1keya/Hachi/blob/master/images/Report_Snap.PNG)
 
 #### MITRE Mapping
 ![MITRE Mapping](https://github.com/Kart1keya/Hachi/blob/master/images/mitre_mapping.png)
