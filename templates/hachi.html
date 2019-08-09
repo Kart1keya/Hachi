@@ -1,0 +1,87 @@
+$def with (table_data, sample_count, status_count)
+<head>
+
+    <title>Welcome to Hachi</title>
+    <link rel="shortcut icon" href="images/favicon.ico" type="image/x-icon">
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/ju/jq-3.3.1/dt-1.10.18/datatables.min.css"/>
+    <script type="text/javascript" src="https://cdn.datatables.net/v/ju/jq-3.3.1/dt-1.10.18/datatables.min.js"></script>
+
+    <style>
+
+
+    </style>
+</head>
+<body>
+
+<div class="container" style="box-shadow: 0 9px 0 0 #F7F7F7, 0 0px 0 0 #F7F7F7, 3px 0 8px -2px #607D8D, -3px 0 8px -4px #607D8D;background-color: #F8F8F8;min-height: 1500px;">
+
+    <div class="row topbar-parent" style="border-bottom: 1px solid black;">
+        <div class="col-sm-3">
+            <a href="/">
+                <img class="branding" src="images/Hachi-Logo-Final-3.png" alt="Hachi">
+            </a>
+        </div>
+        <div class="col-sm-9" style="padding-top: 15px">
+            <ul class="nav navbar-nav" style="float:right;">
+              <li class="active"><a href="/">Home</a></li>
+              <li><a href="https://github.com/Kart1keya/Hachi">About</a></li>
+            </ul>
+        </div>
+    </div>
+    <div class="row" style="border-bottom: 1px solid black;">
+        <div class="col-sm-4" style="text-align:center;padding-top:1%;">
+            <h4><label>COUNT</label></h4>
+            <h3>$sample_count</h3>
+        </div>
+        <div class="col-sm-6" style="padding: 0px 40px;">
+            <form role="upload" method="POST" enctype="multipart/form-data">
+                  <h3><label for="myfile">Scan File:</label></h3>
+                  <input type="file" id="myfile" name="myfile">
+                  <input type="submit" class="btn" value="Upload" style="float: right; margin-top: -7%; margin-right: 15%;">
+            </form>
+        </div>
+        <div class="col-sm-2">​
+                <h4>Pending   <span class="badge">$status_count[1]</span></h4>
+                <h4>Completed <span class="badge">$status_count[0]</span></h4>
+                <h4>Failed <span class="badge">$status_count[2]</span></h4>
+        </div>
+    </div>
+
+    <div class="row">
+        <table id="sample-list" class="colours">
+            <thead>
+            <tr>
+                <th>UID</th>
+                <th>Filename</th>
+                <th>Status</th>
+            </tr>
+            </thead>
+            <tbody>
+            $for todo in table_data:
+            <tr>
+                <td><a href="/report/$todo[0]"> $todo[0] </a></td>
+                <td>$todo[1]</td>
+                <td>$todo[2]</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+</div>
+</body>
+
+<script type="text/javascript">
+    jQuery(document).ready( function () {
+        jQuery('#sample-list').DataTable({
+            "paging":   true,
+            "ordering": true,
+            "info":     true,
+            "searching":true
+        });
+    } );
+</script>

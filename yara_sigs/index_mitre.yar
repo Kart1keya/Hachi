@@ -1,0 +1,1 @@
+include "./mitre/techniques.yar"
