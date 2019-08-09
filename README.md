@@ -11,8 +11,8 @@ Following modules of Hachi make this tool a great addition to an analyst’s or 
 • Visualization: It allows for the creation of detailed visual reports.
 
 
-References:
-https://attack.mitre.org/
-https://www.radare.org/get/THC2018.pdf
-https://github.com/pinkflawd/r2graphity
-https://github.com/Yara-Rules/rules
+References: <br/>
+https://attack.mitre.org/<br/>
+https://www.radare.org/get/THC2018.pdf<br/>
+https://github.com/pinkflawd/r2graphity<br/>
+https://github.com/Yara-Rules/rules<br/>
