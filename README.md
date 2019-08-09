@@ -16,7 +16,7 @@ Following modules of Hachi make this tool a great addition to an analyst’s or 
 ![Hachi Report Page](https://github.com/Kart1keya/Hachi/blob/master/images/Report_Snap.PNG)
 
 #### MITRE Mapping
-![MITRE Mapping](https://github.com/Kart1keya/Hachi/blob/master/images/mitre_mapping.png)
+![MITRE Mapping](https://github.com/Kart1keya/Hachi/blob/master/images/mitre_mapping.PNG)
 
 #### Dependecies:
 1. Download radare2 and add its path in system path.
