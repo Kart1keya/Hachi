@@ -3,8 +3,9 @@
     long as you use it under this license.
 */
 
-rule url : SuspiciousStrings{
+rule url : SuspiciousStrings URL{
     meta:
+        description = "Contains URLs"
         author = "Antonio S. <asanchez@plutec.net>"
     strings:
         $url_regex = /https?:\/\/([\w\.-]+)([\/\w \.-]*)/ wide ascii

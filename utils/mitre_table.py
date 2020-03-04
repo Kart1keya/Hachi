@@ -35,7 +35,7 @@ def table_creation(sig_json, mitre_json):
             keys.append(key)
     table_code.append(keys)
     added_count = 0
-    for i in range(0, len(sig_json.keys())):
+    for i in range(0, len(list(sig_json.keys()))):
         row = []
         for j in range(0, len(mitre_table_json)):
             if tid_len[j] != 0:

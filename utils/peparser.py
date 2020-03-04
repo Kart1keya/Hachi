@@ -127,7 +127,8 @@ def get_imagesections(pe):
       else:
         perms = None
       imagesections.append({
-        "Name": "".join([c for c in section.Name if c in string.printable]),
+        #"Name": "".join([c for c in section.Name if c in string.printable]),
+        "Name": section.Name.decode('utf-8'),
         "VirtualSize": hex(section.Misc_VirtualSize if section and hasattr(section, "Misc_VirtualSize") and
                                                        section.Misc_VirtualSize else 0),
         "SizeOfRawData": hex(section.SizeOfRawData if section and hasattr(section, "SizeOfRawData") and

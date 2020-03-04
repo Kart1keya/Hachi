@@ -1,5 +1,5 @@
 import subprocess
-from config import Config
+from .config import Config
 
 
 class DigitalSignatureCheck:
@@ -77,20 +77,20 @@ class DigitalSignatureCheck:
         result = ""
         try:
             result = subprocess.check_output(cmd, shell=True)
-        except subprocess.CalledProcessError, e:
+            
+        except subprocess.CalledProcessError as e:
             if e.returncode < 0:
                 ExceptionOccured = True
             else:
                 result = e.output
-
         if not ExceptionOccured:
             try:
-                self.parse_sigcheck_output(result)
+                self.parse_sigcheck_output(result.decode('utf-8'))
                 for key in self._DIGISIG_DATA:
                     if key in self._REQ_DATA_FIELD:
                         self._REQ_DATA_FIELD[key] = self._DIGISIG_DATA[key]
             except Exception as e:
-                print(str(e))
+                print((str(e)))
                 self._DIGISIG_DATA = {}
 
         else:

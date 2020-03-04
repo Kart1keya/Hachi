@@ -28,7 +28,7 @@ def patternScan(graphity, pattern):
             # print(anchorpat, call[1])
             if anchorpat in api:
                 #print("anchor: " + anchorpat)
-                if not list(filter(lambda daAnchor: daAnchor['address'] == function, anchorList)):
+                if not list([daAnchor for daAnchor in anchorList if daAnchor['address'] == function]):
                     # maintain a dict of patterns per anchor to keep track of found patterns
                     patternCheck = {}
                     for item in pattern:
@@ -41,7 +41,7 @@ def patternScan(graphity, pattern):
         for anchor in anchorList:
 
             functionalityScanForApi(graphity, anchor, anchor['address'], patternNum)
-            if False in anchor['patterns'].values():
+            if False in list(anchor['patterns'].values()):
 
                 anchorNeighbors = nx.all_neighbors(graphity, anchor['address'])
                 for neighbor in anchorNeighbors:
@@ -63,19 +63,19 @@ def functionalityScanForApi(graphity, anchor, seNode, patternNum):
             if patt in api and anchor['patterns'][patt] == False:
                 anchor['patterns'][patt] = seNode
 
-                if not False in anchor['patterns'].values():
+                if not False in list(anchor['patterns'].values()):
                     # all patterns found - done
                     break
 
 # Graph plotting with pydotplus from within NetworkX, format is dot
-def graphvizPlot(graphity, allAtts, function_list, out_dir):
+def graphvizPlot(graphity, filename, function_list, out_dir):
     graphity_new = copy.deepcopy(graphity)
-    for aNode in graphity_new.nodes(data=True):
+    for aNode in list(graphity_new.nodes(data=True)):
         if aNode[0] not in function_list:
             graphity_new.remove_node(aNode[0])
     pydotMe = nx.drawing.nx_pydot.to_pydot(graphity_new)
 
-    for node in pydotMe.get_nodes():
+    for node in list(pydotMe.get_nodes()):
         #continue
         # get node address to be able to fetch node directly from graphity to preserve data types of attributes
         nodeaddr = node.to_string().split()[0].replace('\"', '')
@@ -130,13 +130,13 @@ def graphvizPlot(graphity, allAtts, function_list, out_dir):
 
 
     #print(finalString)
-    graphinfo = "SAMPLE " + allAtts['filename'] + "\nType: " + allAtts['filetype'] + \
+    '''graphinfo = "SAMPLE " + allAtts['filename'] + "\nType: " + allAtts['filetype'] + \
                 "\nSize: " + str(allAtts['filesize']) + "\nMD5: " + allAtts['md5'] + "\nImphash:\t\t" +\
                 allAtts['imphash'] + "\nCompilation time:\t" + allAtts['compilationts'] + "\nEntrypoint section:\t" + \
-                allAtts['sectionep']
+                allAtts['sectionep']'''
 
 
-    graphname = allAtts['filename'] + ".png"
+    graphname = filename + ".png"
     print(graphname)
     try:
         # TODO pydotplus throws an error sometimes (Error: /tmp/tmp6XgKth: syntax error in line 92 near '[') look into pdp code to see why
@@ -145,4 +145,4 @@ def graphvizPlot(graphity, allAtts, function_list, out_dir):
         pydotMe.write_png(out_filename)
     except Exception as e:
         print("ERROR drawing graph")
-        print(str(e))
+        print((str(e)))

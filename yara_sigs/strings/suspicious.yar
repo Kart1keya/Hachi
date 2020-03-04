@@ -37,7 +37,7 @@ rule  System_Tools : SuspiciousStrings
         $a13 = "bcdedit.exe" nocase wide ascii
         $a14 = "dumpcap.exe" nocase wide ascii
         $a15 = "tcpdump.exe" nocase wide ascii
-	$a16 = "mshta.exe" nocase wide ascii    // Used by DUBNIUM to download files
+	    $a16 = "mshta.exe" nocase wide ascii    // Used by DUBNIUM to download files
         $a17 = "control.exe" nocase wide ascii  // Used by EquationGroup to launch DLLs
         $a18 = "regsvr32.exe" nocase wide ascii
         $a19 = "rundll32.exe" nocase wide ascii
@@ -608,7 +608,6 @@ rule  Misc_Suspicious_Strings : SuspiciousStrings
         $a1 = "virus" nocase ascii wide fullword
         $a2 = "hack" nocase ascii wide fullword
         $a3 = "exploit" nocase ascii wide
-        $a4 = "cmd.exe" nocase ascii wide
         $a5 = "CWSandbox" nocase wide ascii // Found in some Zeus/Citadel samples
         $a6 = "System32\\drivers\\etc\\hosts" nocase wide ascii
     condition:

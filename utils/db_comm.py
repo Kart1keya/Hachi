@@ -1,13 +1,16 @@
+import os
 import sqlite3
-from config import Config
+from .config import Config
 
 
+# Changing current directory to main folder so that relative path work everywhere
+os.chdir(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 opts = Config().read_config()
 
 
-def insert(uid, hash, filename, status):
+def insert(uid, hash, filename, status, filetype):
     conn = sqlite3.connect(opts["config"]["DB_PATH"])
-    conn.execute("""INSERT INTO HACHI (UID,HASH,FILEPATH, STATUS) VALUES (?, ?, ?, ? );""", (uid, hash, filename, status))
+    conn.execute("""INSERT INTO HACHI (UID,HASH,FILEPATH, STATUS, FILETYPE) VALUES (?, ?, ?, ?, ? );""", (uid, hash, filename, status, filetype))
     conn.commit()
     conn.close()
 
@@ -62,6 +65,10 @@ def create_table():
              hash           CHAR(50),
              filepath       CHAR(50),
              status        TEXT,
+             filetype        TEXT,
              timestamp DATETIME DEFAULT CURRENT_TIMESTAMP);''')
     conn.close()
+
+if __name__ == "__main__":
+    create_table()
 

@@ -26,6 +26,7 @@ funcDict = {
     'PROCESS_TERM_1': ['ZwTerminateProcess'],
 
     'REMOTE_THREAD_INJECTION': ['CreateThread', 'WriteProcessMemory','ResumeThread'],
+    'REMOTE_THREAD_INJECTION_1': ['OpenProcess', 'VirtualAllocEx','WriteProcessMemory'],
     'REMOTE_THREAD_1': ['CreateRemoteThread'],
     'RETRO_INJECTION': ['GetCurrentProcess', 'CreatePipe', 'DuplicateHandle'],
     'MEMORY_WRITE': ['WriteProcessMemory'],

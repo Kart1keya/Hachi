@@ -2,10 +2,12 @@ import os
 import web
 import uuid
 import json
+import pefile
 import hashlib
 import pythoncom
 import win32com.client
 from utils import db_comm
+from utils.MSMQCustom import MSMQCustom
 from utils.config import Config
 from utils.mitre_table import table_creation
 
@@ -16,13 +18,14 @@ urls = ('/', 'Upload',
         '/images/(.*)', 'Images'
         )
 
+
 opts = Config().read_config()
 pythoncom.CoInitialize()
-qinfo = win32com.client.Dispatch("MSMQ.MSMQQueueInfo")
-computer_name = os.getenv('COMPUTERNAME')
-queue_name = opts["config"]["QUEUE_NAME"]
-qinfo.FormatName = "direct=os:" + computer_name + "\\PRIVATE$\\" + queue_name
+msmq_queue_obj = MSMQCustom(opts["config"]["QUEUE_NAME"])
 
+
+def status(c):
+    return str(c)
 
 class Reporting:
 
@@ -30,61 +33,96 @@ class Reporting:
         pass
 
     def GET(self, uid):
-        render = web.template.frender('templates/reporting.html')
+        
         filename = db_comm.get_column_val('uid', uid, 'filepath')
-        anomalies = []
+        filetype = db_comm.get_column_val('uid', uid, 'filetype')
+        if filetype == "PE":
+            render = web.template.frender('templates/reporting.html', globals={'stat':status})
+        else:
+            render = web.template.frender('templates/reporting_Linux.html', globals={'stat':status})
+        anomalies = {}
+        tip_data = {}
         file_info = {}
         cert_info = {}
         table_data = {}
         static_info = {}
         campaign_info = {}
-        suspicious_api_seq = []
+        emulation_data = {}
+        threat_intel_file = {}
+        suspicious_api_seq = {}
         report_path = os.path.join(opts["config"]["OUTPUT_DIR"], uid)
-        if os.path.exists(os.path.join(report_path, uid + '.campaign.json')):
-            with open(os.path.join(report_path, uid + '.campaign.json'), 'rb') as fp:
-                campaign_info = json.load(fp)
-        if os.path.exists(os.path.join(report_path, uid + '.basic_info.json')):
-            with open(os.path.join(report_path, uid+'.basic_info.json'), 'rb') as fp:
-                file_info = json.load(fp)
-        if os.path.exists(os.path.join(report_path, uid + '.static.json')):
-            with open(os.path.join(report_path, uid + '.static.json'),
-                      'rb') as fp:
-                static_info = json.load(fp)
-        if os.path.exists(os.path.join(report_path, uid + '.cert.json')):
-            with open(os.path.join(report_path, uid + '.cert.json'),
-                      'rb') as fp:
-                cert_info = json.load(fp)
-        if os.path.exists(os.path.join(report_path, uid + '.yara.json')):
-            with open(os.path.join(report_path, uid + '.yara.json'),
-                      'rb') as fp:
-                suspicious = json.load(fp)
-                if "Yara Matched" in suspicious:
-                    for tag in suspicious["Yara Matched"].keys():
-                        for rule_name in suspicious["Yara Matched"][tag].keys():
-                            if "description" in suspicious["Yara Matched"][tag][rule_name]:
-                                anomalies.append(suspicious["Yara Matched"][tag][rule_name]["description"])
-        if os.path.exists(os.path.join(report_path, uid + '.behav.json')):
-            with open(os.path.join(report_path, uid + '.behav.json'),
-                      'rb') as fp:
-                behav_json = json.load(fp)
-                if "Suspicious Behaviors" in behav_json:
-                    for api_seq in behav_json["Suspicious Behaviors"].keys():
-                        suspicious_api_seq.append(api_seq)
-        if os.path.exists('utils\mitre.json'):
-            with open('utils\mitre.json', 'rb') as fp:
-                mitre_json = json.load(fp)
-                if os.path.exists(os.path.join(report_path, uid + '.mitre.json')):
-                    with open(os.path.join(report_path, uid+'.mitre.json'), 'rb') as fs:
-                        sig_json = json.load(fs)
-                        table_data = table_creation(sig_json, mitre_json)
-        if os.path.exists(os.path.join(report_path, uid + '.png')):
-            png_name = uid + '.png'
-        else:
-            png_name = 'Hachi-Logo.png'
-        html_data = render(uid, filename, file_info, campaign_info, table_data, static_info, cert_info, anomalies,
-                           suspicious_api_seq, png_name)
-        return html_data
+        try:
+            if os.path.exists(os.path.join(report_path, uid + '.campaign.json')):
+                with open(os.path.join(report_path, uid + '.campaign.json'), 'rb') as fp:
+                    campaign_info = json.load(fp)
+            if os.path.exists(os.path.join(report_path, uid + '.basic_info.json')):
+                with open(os.path.join(report_path, uid+'.basic_info.json'), 'rb') as fp:
+                    file_info = json.load(fp)
+            if os.path.exists(os.path.join(report_path, uid + '.threat_intel_file.json')):
+                with open(os.path.join(report_path, uid+'.threat_intel_file.json'), 'rb') as fp:
+                    threat_intel_file = json.load(fp)        
+            if os.path.exists(os.path.join(report_path, uid + '.static.json')):
+                with open(os.path.join(report_path, uid + '.static.json'),
+                            'rb') as fp:
+                    static_info = json.load(fp)
+            if os.path.exists(os.path.join(report_path, uid + '.cert.json')):
+                with open(os.path.join(report_path, uid + '.cert.json'),
+                            'rb') as fp:
+                    cert_info = json.load(fp)
+            if os.path.exists(os.path.join(report_path, uid + '.yara.json')):
+                with open(os.path.join(report_path, uid + '.yara.json'),
+                            'rb') as fp:
+                    suspicious = json.load(fp)
+                    if "Yara Matched" in suspicious:
+                        for tag in list(suspicious["Yara Matched"].keys()):
+                            if tag != "URL" and tag != "domain" and tag != "IP" and tag != "URL":
+                                anomalies[tag] = {}
+                                for rule_name in list(suspicious["Yara Matched"][tag].keys()):
+                                    if "description" in suspicious["Yara Matched"][tag][rule_name]:
+                                        anomalies[tag][suspicious["Yara Matched"][tag][rule_name]["description"]] = suspicious["Yara Matched"][tag][rule_name]["indicators_matched"]
 
+
+            if os.path.exists(os.path.join(report_path, uid + '.tip.json')):
+                with open(os.path.join(report_path, uid + '.tip.json'),
+                            'rb') as fp:
+                    tip_data = json.load(fp)
+
+            if os.path.exists(os.path.join(report_path, uid + '.behav.json')):
+                with open(os.path.join(report_path, uid + '.behav.json'), 
+                            'rb') as fp:
+                    behav_json = json.load(fp)
+                    if "Suspicious Behaviors" in behav_json:
+                        suspicious_api_seq = behav_json["Suspicious Behaviors"]
+
+            if filetype == "PE":
+                if os.path.exists(os.path.join(report_path, uid + '.emulation.json')):
+                    with open(os.path.join(report_path, uid + '.emulation.json'), 'rb') as fp:
+                        emulation_data = json.load(fp)
+
+            if os.path.exists('utils\mitre.json'):
+                with open('utils\mitre.json', 'rb') as fp:
+                    mitre_json = json.load(fp)
+                    if os.path.exists(os.path.join(report_path, uid + '.mitre.json')):
+                        with open(os.path.join(report_path, uid+'.mitre.json'), 'rb') as fs:
+                            sig_json = json.load(fs)
+                            table_data = table_creation(sig_json, mitre_json)
+            if os.path.exists(os.path.join(report_path, uid + '.png')):
+                png_name = uid + '.png'
+            else:
+                png_name = 'Hachi-Logo.png'
+            if filetype == "PE":
+                html_data = render(uid, filename, file_info, campaign_info, table_data, static_info, cert_info, anomalies,
+                                suspicious_api_seq, tip_data, emulation_data, threat_intel_file, png_name)
+            else:
+                html_data = render(uid, filename, file_info, campaign_info, table_data, static_info, anomalies,
+                                    suspicious_api_seq, tip_data, threat_intel_file, png_name)
+        
+            return html_data
+        except Exception as e:
+            print((str(e)))
+            web.InternalError("Internal Server Error. Check Log!!")
+
+               
 
 class Upload:
     def __init__(self):
@@ -110,18 +148,29 @@ class Upload:
             os.mkdir(folderpath)
             out_folderpath = os.path.join(opts["config"]["OUTPUT_DIR"], str(uid))
             os.mkdir(out_folderpath)
-            with open(os.path.join(folderpath, str(uid)), 'wb') as fp:
+            src_filepath = os.path.join(folderpath, str(uid))
+            with open(src_filepath, 'wb') as fp:
                 fp.write(x['myfile'].file.read())
-
-            queue = qinfo.Open(2, 0)  # Open a ref to queue
-            msg = win32com.client.Dispatch("MSMQ.MSMQMessage")
-            msg.Label = "TestMsg"
-            msg.Body = str(uid)
-            msg.Send(queue)
-            queue.Close()
-            with open(os.path.join(folderpath, str(uid)), 'rb') as fp:
+            
+            filetype = ""
+            try:
+                pefile.PE(src_filepath)
+                filetype = "PE"
+            except Exception as e:
+                with open(src_filepath, 'rb') as fp:
+                    marker = fp.read(4)
+                    if "\x7fELF" == marker.decode('utf-8'):
+                        filetype = "ELF"
+                    else:
+                        raise web.seeother('/')
+            
+            # Open a ref to queue
+            msmq_queue_obj.open_queue(2, 0)
+            msmq_queue_obj.send_to_queue(filetype, str(uid))
+            msmq_queue_obj.close_queue()
+            with open(src_filepath, 'rb') as fp:
                 sha2 = hashlib.sha256(fp.read()).hexdigest()
-            db_comm.insert(str(uid), sha2, filename, "PENDING")
+            db_comm.insert(str(uid), sha2, filename, "PENDING", filetype)
         raise web.seeother('/')
 
 

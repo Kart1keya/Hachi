@@ -265,8 +265,8 @@ rule DebuggerPattern__SEH_Saves : AntiDebug {
 /*
 rule DebuggerPattern__SEH_Inits : AntiDebug {
 	meta:
-		weight = 1
 		Author = "naxonez"
+        description = "Tries to detect virtualized environments"
 		reference = "https://github.com/naxonez/yaraRules/blob/master/AntiDebugging.yara"
 	strings:
 		$ = {64 89 25 00 00 00 00}
@@ -815,6 +815,7 @@ rule WMI_VM_Detect : AntiVM
 
 }
 
+/*
 rule anti_dbg : AntiDebug {
     meta:
         author = "x0r"
@@ -830,6 +831,7 @@ rule anti_dbg : AntiDebug {
     condition:
         $d1 and 1 of ($c*)
 }
+*/
 
 rule anti_dbgtools : AntiDebug {
     meta:
@@ -1550,7 +1552,7 @@ rule escalate_priv : SuspiciousActivity {
 rule screenshot : SuspiciousActivity {
     meta:
         author = "x0r"
-        description = "Take screenshot"
+        description = "May Take screenshot"
 	version = "0.1"
     strings:
         $d1 = "Gdi32.dll" nocase
@@ -1796,7 +1798,7 @@ rule rat_webcam : SuspiciousActivity {
 rule check_patchlevel : SuspiciousActivity {
     meta:
         author = "x0r"
-        description = "Check if hotfix are applied"
+        description = "Checks if hotfix are applied"
 	version = "0.1"
     strings:
         $p1 = "SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Hotfix" nocase
@@ -1835,7 +1837,7 @@ rule win_registry : GenericActivity {
 rule win_token : SuspiciousActivity {
     meta:
         author = "x0r"
-        description = "Affect system token"
+        description = "May affect system token"
     version = "0.1"
     strings:
         $f1 = "advapi32.dll" nocase
@@ -1850,7 +1852,7 @@ rule win_token : SuspiciousActivity {
 rule win_private_profile : SuspiciousActivity {
     meta:
         author = "x0r"
-        description = "Affect private profile"
+        description = "May affect private profile"
     version = "0.1"
     strings:
         $f1 = "kernel32.dll" nocase
@@ -1864,7 +1866,7 @@ rule win_private_profile : SuspiciousActivity {
 rule win_files_operation : GenericActivity {
     meta:
         author = "x0r"
-        description = "Affect private profile"
+        description = "May affect private profile"
     version = "0.1"
     strings:
         $f1 = "kernel32.dll" nocase
@@ -1888,7 +1890,7 @@ rule win_files_operation : GenericActivity {
 rule win_hook : SuspiciousActivity {
     meta:
         author = "x0r"
-        description = "Affect hook table"
+        description = "May affect hook table"
     version = "0.1"
     strings:
         $f1 = "user32.dll" nocase
@@ -1898,6 +1900,7 @@ rule win_hook : SuspiciousActivity {
     condition:
         $f1 and 1 of ($c*)
 }
+
 rule vmdetect_misc : AntiVM
 {
 	meta:
@@ -1905,7 +1908,7 @@ rule vmdetect_misc : AntiVM
 		maltype = "NA"
 		version = "0.1"
 		date = "31/10/2015"
-		description = "Following Rule is referenced from AlienVault's Yara rule repository.This rule contains additional processes and driver names."
+		description = "Contains Anti-VM additional processes and driver names."
 	strings:
 		$vbox1 = "VBoxService" nocase ascii wide
 		$vbox2 = "VBoxTray" nocase ascii wide

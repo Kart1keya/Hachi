@@ -1,16 +1,17 @@
 #!/usr/bin/env python
 
+import os
 import re
 import json
 import r2pipe
-import graphityFunc
+from . import graphityFunc
 from time import time
 import networkx as nx
 from base64 import b64decode
 from datetime import datetime
 from collections import Counter
-from graphityOps import patternScan, graphvizPlot
-from graphityUtils import gimmeDatApiName, getAllAttributes, check_pe_header
+from .graphityOps import patternScan, graphvizPlot
+from .graphityUtils import gimmeDatApiName, getAllAttributes, check_pe_header
 
 
 # Checks whether an address is located in an executable section
@@ -291,12 +292,12 @@ def createRawGraph():
                         refsGlobalVar = refsGlobalVar + 1
 
                     else:
-                        print(
+                        print((
                                 "FAIL: Call to code thats not a function, an import/symbol or otherwise recognized. Missed function perhaps. %s -> %s" % (
-                            hex(item['offset']), hex(xref['addr'])))
+                            hex(item['offset']), hex(xref['addr']))))
                         refsUnrecognized = refsUnrecognized + 1
 
-    print('* %s Graph created with NetworkX ' % str(datetime.now()))
+    print(('* %s Graph created with NetworkX ' % str(datetime.now())))
     debugDict['refsFunctions'] = refsFunc
     debugDict['refsGlobalVar'] = refsGlobalVar
     debugDict['refsUnrecognized'] = refsUnrecognized
@@ -326,8 +327,8 @@ def createRawGraph():
             missesNum = missesNum + 1
 
     # debug: print total API refs and functionless API refs, maybe indicator for obfuscated code
-    print('* %s Graph extended with API calls, %d calls in total, %d dangling w/o function reference ' % (
-        str(datetime.now()), callNum, missesNum))
+    print(('* %s Graph extended with API calls, %d calls in total, %d dangling w/o function reference ' % (
+        str(datetime.now()), callNum, missesNum)))
     debugDict['apiTotal'] = callNum
     debugDict['apiMisses'] = missesNum
 
@@ -348,9 +349,9 @@ def createRawGraph():
             stringrefs = stringrefs + 1
 
         else:
-            print("\n*** BIG FAIL *** String's function not in graph %s %s" % (stringFunc, stringData))
+            print(("\n*** BIG FAIL *** String's function not in graph %s %s" % (stringFunc, stringData)))
 
-    print('* %s Graph extended with string references ' % (str(datetime.now())))
+    print(('* %s Graph extended with string references ' % (str(datetime.now()))))
     debugDict['stringsReferencedTotal'] = stringrefs
 
     return graphity, debugDict
@@ -453,7 +454,7 @@ def tagCallbacks(graphity):
                             addIndirectEdge(graphity, hex(xref['from']), aNode[0], "dataref", "IndirectData")
                         else:
                             # TODO look into add reg, ThreadRoutine -> as xref
-                            print ("up for discussion: " + hex(xref['from']), xref['type'], xref['opcode'])
+                            print(("up for discussion: " + hex(xref['from']), xref['type'], xref['opcode']))
 
 
 def addIndirectEdge(graphity, fromAddr, toAddr, calltype, functiontype):
@@ -464,7 +465,7 @@ def addIndirectEdge(graphity, fromAddr, toAddr, calltype, functiontype):
         graphity.add_edge(fromNode, toNode, calltype=calltype)
         # print ("added callback edge", fromNode, toNode, calltype, "\n")
     else:
-        print ("Something went wrong with indirect edge ", fromAddr, toAddr, calltype)
+        print(("Something went wrong with indirect edge ", fromAddr, toAddr, calltype))
 
 
 # Parsing the handler offset out of the function arguments
@@ -525,13 +526,13 @@ def mnemonicism(offset):
 
 
 # super graph creation function, radare-analyses the sample, puts together all of the graph and debug info
-def graphMagix(filepath, allAtts, deactivatecache):
+def graphMagix(filepath, deactivatecache):
     global R2PY
 
-    print('* %s R2 started analysis ' % str(datetime.now()))
+    print(('* %s R2 started analysis ' % str(datetime.now())))
 
     BENCH['r2_start'] = time()
-    print("filepath:" + filepath)
+    print(("filepath:" + filepath))
 
     R2PY = r2pipe.open(filepath)
 
@@ -548,17 +549,19 @@ def graphMagix(filepath, allAtts, deactivatecache):
 
 
     BENCH['r2_end'] = time()
-    print('* %s R2 finished analysis' % str(datetime.now()))
+    print(('* %s R2 finished analysis' % str(datetime.now())))
 
     # GRAPH CREATION
     graphity, debug = createRawGraph()
+
+    print(('* %s create raw graph over' % str(datetime.now())))
 
     # TODO testing lib code detected
     # flagLibraryCode(graphity)
 
     # DLL PROCESSING
-    if 'DLL' in allAtts['filetype']:
-        analyzeExports(graphity)
+    #if 'DLL' in allAtts['filetype']:
+    #    analyzeExports(graphity)
 
     # Thunk pruning, thunks are unnecessary information in the graph
     thunkPruning(graphity)
@@ -566,16 +569,21 @@ def graphMagix(filepath, allAtts, deactivatecache):
     # handler tagging
     tagCallbacks(graphity)
 
+    print('* %s thunk and tag callbacks' % str(datetime.now()))
+
     # update api and string count attributes
+    print ("* %s Number of nodes in graphity: %d" % (str(datetime.now()), len(graphity.nodes(data=True))))
     for aNode in graphity.nodes(data=True):
         aNode[1]['apicallcount'] = len(aNode[1]['calls'])
         aNode[1]['stringcount'] = len(aNode[1]['strings'])
 
+    print(('* %s api count and string count' % str(datetime.now())))
     # calc mnemonic dist
     for aNode in graphity.nodes():
         graphity.node[aNode]['mnemonicism'] = mnemonicism(aNode)
 
     BENCH['graph_end'] = time()
+    print("Graph magix over")
 
 
     return graphity, debug
@@ -586,35 +594,35 @@ def get_behaviors(filepath, dst_file, out_dir):
     BENCH = {}
 
     behaviours = {}
-    if check_pe_header(filepath):
-        print('* %s Parsing %s ' % (str(datetime.now()), filepath))
-        allAtts = getAllAttributes(filepath)
-        graphity, debug = graphMagix(filepath, allAtts, True)  # args.deactivatecache)
 
-        # BEHAVIOR
-        print('* %s Scanning for API patterns ' % str(datetime.now()))
-        BENCH['behavior_start'] = time()
-        allThePatterns = graphityFunc.funcDict
+    print(('* %s Parsing %s ' % (str(datetime.now()), filepath)))
+    graphity, debug = graphMagix(filepath, True)  # args.deactivatecache)
 
-        for patty in allThePatterns:
-            # print(patty)
-            findings = patternScan(graphity, allThePatterns[patty])
-            # print("Findings:")
-            # print(findings)
-            for hit in findings:
-                if not False in hit['patterns'].values():
-                    #print("For %s found %s" % (patty, str(hit['patterns'])))
-                    if patty in behaviours:
-                        list_hit = behaviours[patty]
-                        list_hit.append(hit['patterns'])
-                        behaviours[patty] = list_hit
-                    else:
-                        behaviours[patty] = [hit['patterns']]
-        BENCH['behavior_end'] = time()
+    # BEHAVIOR
+    print(('* %s Scanning for API patterns ' % str(datetime.now())))
+    BENCH['behavior_start'] = time()
+    allThePatterns = graphityFunc.funcDict
+
+    for patty in allThePatterns:
+        # print(patty)
+        findings = patternScan(graphity, allThePatterns[patty])
+        # print("Findings:")
+        # print(findings)
+        for hit in findings:
+            if not False in list(hit['patterns'].values()):
+                #print("For %s found %s" % (patty, str(hit['patterns'])))
+                if patty in behaviours:
+                    list_hit = behaviours[patty]
+                    list_hit.append(hit['patterns'])
+                    behaviours[patty] = list_hit
+                else:
+                    behaviours[patty] = [hit['patterns']]
+    BENCH['behavior_end'] = time()
 
     ret_info = {}
     function_list = {}
     # print("printing behaviors found above")
+    base_file = dst_file.replace(".behav.json", "")
     if behaviours:
         for behav in behaviours:
             info = behaviours[behav]
@@ -626,26 +634,32 @@ def get_behaviors(filepath, dst_file, out_dir):
                         # print(entry)
                         # print function_list
 
-        base_file = dst_file.replace(".behav.json", "")
-        for funct in function_list:
-            R2PY.cmd("s." + funct)
-            pseudo_code = R2PY.cmd("pdc")
-            code_file = base_file + "." + function_list[funct] + "_" + funct + ".c"
-            with open(code_file, "w") as out:
-                for line in pseudo_code.split("\n"):
-                    line = line.rstrip()
-                    if line:
-                        out.write(line + "\n")
+        
+        try:
+            for funct in function_list:
+                R2PY.cmd("s." + funct)
+                pseudo_code = R2PY.cmd("pdc")
+                code_file = base_file + "." + function_list[funct] + "_" + funct + ".c"
+                with open(code_file, "w") as out:
+                    for line in pseudo_code.split("\n"):
+                        line = line.rstrip()
+                        if line:
+                            out.write(line + "\n")
+        except Exception as e:
+            print("Error: %s" % str(e))
+
 
         # print(function_list)
         ret_info["Suspicious Behaviors"] = behaviours
         with open(dst_file, "w") as out:
             out.write(json.dumps(ret_info, sort_keys=True, indent=4))
 
-    print('* %s Plotting routine starting ' % str(datetime.now()))
-    BENCH['plotting_start'] = time()
-    graphvizPlot(graphity, allAtts, function_list, out_dir)
-    BENCH['plotting_end'] = time()
-    print('* %s Plotting routine finished ' % str(datetime.now()))
+        print(('* %s Plotting routine starting ' % str(datetime.now())))
+        BENCH['plotting_start'] = time()
+        graphvizPlot(graphity, os.path.basename(os.path.abspath(base_file)), function_list, out_dir)
+        BENCH['plotting_end'] = time()
+        print(('* %s Plotting routine finished ' % str(datetime.now())))
+    else:
+        print("No Such behavior found to dump image")
 
     return ret_info

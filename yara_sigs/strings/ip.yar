@@ -3,8 +3,9 @@
     long as you use it under this license.
 */
 
-rule IP : SuspiciousStrings {
+rule IP : SuspiciousStrings IP {
     meta:
+        description = "Contains IPs"
         author = "Antonio S. <asanchez@plutec.net>"
     strings:
         $ip = /([0-9]{1,3}\.){3}[0-9]{1,3}/ wide ascii

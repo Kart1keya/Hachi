@@ -199,7 +199,7 @@ def Hvalue(data):
     occurences = Counter(bytearray(data))
 
     entropy = 0
-    for x in occurences.values():
+    for x in list(occurences.values()):
         p_x = float(x) / len(data)
         if p_x > 0:
             entropy += - p_x * math.log(p_x, 2)

@@ -1,8 +1,11 @@
 r2pipe==0.9.9
-pypiwin32==219
-yara_python==3.8.1
-web.py==0.39
-pefile==2017.11.5
+web.py
+pywin32
+OTXv2
+pefile
+lief
 networkx==2.2
-web==0.6.0
-yara==1.7.7
+yara-python
+pydot
+graphviz
+spam_lists
